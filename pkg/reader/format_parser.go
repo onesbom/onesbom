@@ -16,3 +16,9 @@ type FormatParser interface {
 func GetFormatParser(formatString string) (FormatParser, error) {
 	return nil, nil
 }
+
+type SPDX23 struct{}
+
+func (spdx23 *SPDX23) Parse(*Options, io.Reader) (*sbom.Document, error) {
+	return nil, nil
+}

@@ -38,7 +38,8 @@ func (dpi *defaultParserImplementation) DetectFormat(_ *Options, f io.Reader) (f
 
 func (dpi *defaultParserImplementation) GetFormatParser(_ *Options, format formats.Format) (FormatParser, error) {
 	switch string(format) {
-
+	case "2.3;text/spdx+json":
+		return &SPDX23{}, nil
 	}
 
 	return nil, fmt.Errorf("no parser registered for %s", format)
