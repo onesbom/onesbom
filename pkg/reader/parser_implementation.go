@@ -4,7 +4,9 @@
 package reader
 
 import (
+	"fmt"
 	"io"
+	"os"
 
 	"github.com/onesbom/onesbom/pkg/formats"
 )
@@ -18,7 +20,11 @@ type parserImplementation interface {
 type defaultParserImplementation struct{}
 
 func (dpi *defaultParserImplementation) OpenDocumentFile(path string) (io.Reader, error) {
-	return nil, nil
+	f, err := os.Open(path)
+	if err != nil {
+		return nil, fmt.Errorf("opening document file %w", err)
+	}
+	return f, nil
 }
 
 func (dpi *defaultParserImplementation) DetectFormat(*Options, io.Reader) (formats.Format, error) {
