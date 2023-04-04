@@ -27,8 +27,13 @@ func (dpi *defaultParserImplementation) OpenDocumentFile(path string) (io.Reader
 	return f, nil
 }
 
-func (dpi *defaultParserImplementation) DetectFormat(*Options, io.Reader) (formats.Format, error) {
-	return "", nil
+func (dpi *defaultParserImplementation) DetectFormat(_ *Options, f io.Reader) (formats.Format, error) {
+	sniffer := FormatSniffer{}
+	format, err := sniffer.SniffReader(f)
+	if err != nil {
+		return "", fmt.Errorf("detecting format: %w", err)
+	}
+	return format, nil
 }
 
 func (dpi *defaultParserImplementation) GetFormatParser(*Options, formats.Format) (FormatParser, error) {
