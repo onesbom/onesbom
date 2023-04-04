@@ -36,6 +36,10 @@ func (dpi *defaultParserImplementation) DetectFormat(_ *Options, f io.Reader) (f
 	return format, nil
 }
 
-func (dpi *defaultParserImplementation) GetFormatParser(*Options, formats.Format) (FormatParser, error) {
-	return nil, nil
+func (dpi *defaultParserImplementation) GetFormatParser(_ *Options, format formats.Format) (FormatParser, error) {
+	switch string(format) {
+
+	}
+
+	return nil, fmt.Errorf("no parser registered for %s", format)
 }

@@ -8,14 +8,11 @@ type Document struct {
 	Nodes    []Node
 }
 
-type Node interface {
-}
+type Node interface{}
 
-type Package struct {
-}
+type Package struct{}
 
-type File struct {
-}
+type File struct{}
 
 type RelationshipType string
 
