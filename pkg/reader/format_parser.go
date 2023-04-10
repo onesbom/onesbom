@@ -42,7 +42,7 @@ func (spdx23 *SPDX23) ParseJSON(opts *Options, f io.Reader) (*sbom.Document, err
 	for _, pdata := range spdxDoc.Packages {
 		p := sbom.Package{}
 		p.SetID(strings.TrimPrefix(pdata.ID, v23.IDPrefix))
-		if err := bom.AddNode(p); err != nil {
+		if err := bom.AddNode(&p); err != nil {
 			return nil, fmt.Errorf("adding package to document: %w", err)
 		}
 	}
@@ -51,7 +51,7 @@ func (spdx23 *SPDX23) ParseJSON(opts *Options, f io.Reader) (*sbom.Document, err
 	for _, fdata := range spdxDoc.Files {
 		f := sbom.File{}
 		f.SetID(strings.TrimPrefix(fdata.ID, v23.IDPrefix))
-		if err := bom.AddNode(f); err != nil {
+		if err := bom.AddNode(&f); err != nil {
 			return nil, fmt.Errorf("adding file to document: %w", err)
 		}
 	}
