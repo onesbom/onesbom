@@ -10,13 +10,17 @@ import "fmt"
 type Element struct {
 	document *Document
 	id       string
+	Name     string
 }
 
-func (e *Element) ID() string {
+// ID returns the ID of the element
+func (e Element) ID() string {
 	return e.id
 }
 
-func (e *Package) linkDocument(doc *Document) error {
+// linkDocument is an internal function to relate an element to its containing
+// document.
+func (e Element) linkDocument(doc *Document) error {
 	e.document = doc
 	if doc == nil {
 		return fmt.Errorf("formatting document")

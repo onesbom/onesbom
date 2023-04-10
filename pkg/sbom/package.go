@@ -6,3 +6,7 @@ package sbom
 type Package struct {
 	Element
 }
+
+func (p *Package) SetID(newID string) {
+	p.id = newID
+}

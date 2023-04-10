@@ -6,3 +6,7 @@ package sbom
 type File struct {
 	Element
 }
+
+func (f *File) SetID(newID string) {
+	f.id = newID
+}
