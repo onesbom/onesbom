@@ -4,7 +4,8 @@
 package v23
 
 const (
-	Version = "SPDX-2.3"
+	Version  = "SPDX-2.3"
+	IDPrefix = "SPDXRef-"
 )
 
 type Document struct {
