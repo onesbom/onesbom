@@ -3,21 +3,28 @@
 
 package sbom
 
+import (
+	"fmt"
+)
+
 type Document struct {
-	Metadata interface{}
-	Nodes    []Node
+	Metadata      interface{}
+	Nodes         []Node
+	Relationships []Relationship
 }
 
-type Node interface{}
+// AddNode adds a node the the document
+func (doc *Document) AddNode(n Node) error {
+	for _, testNode := range doc.Nodes {
+		if testNode.ID() == n.ID() {
+			return fmt.Errorf("node %s is already in the document", n.ID())
+		}
+	}
 
-type Package struct{}
+	if err := n.linkDocument(doc); err != nil {
+		return fmt.Errorf("linking node to document")
+	}
 
-type File struct{}
-
-type RelationshipType string
-
-type Relationship struct {
-	Source *Node
-	Target *Node
-	Type   RelationshipType
+	doc.Nodes = append(doc.Nodes, n)
+	return nil
 }
