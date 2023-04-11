@@ -39,13 +39,23 @@ func (spdx23 *SPDX23) ParseJSON(opts *Options, f io.Reader) (*sbom.Document, err
 	bom := &sbom.Document{}
 
 	// Assign the document metadata
-	for _, pdata := range spdxDoc.Packages {
+	for i := range spdxDoc.Packages {
 		p := sbom.Package{}
-		p.SetID(strings.TrimPrefix(pdata.ID, v23.IDPrefix))
+		p.SetID(strings.TrimPrefix(spdxDoc.Packages[i].ID, v23.IDPrefix))
 
 		p.Hashes = map[string]string{}
-		for _, cs := range pdata.Checksums {
+		for _, cs := range spdxDoc.Packages[i].Checksums {
 			p.Hashes[cs.Algorithm] = cs.Value
+		}
+
+		if spdxDoc.Packages[i].ExternalRefs != nil {
+			p.Identifiers = []sbom.Identifier{}
+			for _, extid := range spdxDoc.Packages[i].ExternalRefs {
+				p.Identifiers = append(p.Identifiers, sbom.Identifier{
+					Type:  extid.Type,
+					Value: extid.Locator,
+				})
+			}
 		}
 
 		if err := bom.AddNode(&p); err != nil {
@@ -54,12 +64,12 @@ func (spdx23 *SPDX23) ParseJSON(opts *Options, f io.Reader) (*sbom.Document, err
 	}
 
 	// Assign the document metadata
-	for _, fdata := range spdxDoc.Files {
+	for i := range spdxDoc.Files {
 		f := sbom.File{}
-		f.SetID(strings.TrimPrefix(fdata.ID, v23.IDPrefix))
+		f.SetID(strings.TrimPrefix(spdxDoc.Files[i].ID, v23.IDPrefix))
 
 		f.Hashes = map[string]string{}
-		for _, cs := range fdata.Checksums {
+		for _, cs := range spdxDoc.Files[i].Checksums {
 			f.Hashes[cs.Algorithm] = cs.Value
 		}
 
