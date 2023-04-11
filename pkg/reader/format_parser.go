@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	v23 "github.com/onesbom/onesbom/pkg/formats/spdx/v23"
+	"github.com/onesbom/onesbom/pkg/license"
 	"github.com/onesbom/onesbom/pkg/sbom"
 )
 
@@ -58,6 +59,10 @@ func (spdx23 *SPDX23) ParseJSON(opts *Options, f io.Reader) (*sbom.Document, err
 			}
 		}
 
+		// License data
+		p.License = license.Expression(spdxDoc.Packages[i].LicenseDeclared)
+		p.LicenseConcluded = license.Expression(spdxDoc.Packages[i].LicenseConcluded)
+
 		if err := bom.AddNode(&p); err != nil {
 			return nil, fmt.Errorf("adding package to document: %w", err)
 		}
@@ -71,6 +76,13 @@ func (spdx23 *SPDX23) ParseJSON(opts *Options, f io.Reader) (*sbom.Document, err
 		f.Hashes = map[string]string{}
 		for _, cs := range spdxDoc.Files[i].Checksums {
 			f.Hashes[cs.Algorithm] = cs.Value
+		}
+
+		// License data found in files
+		if spdxDoc.Files[i].LicenseInfoInFile != nil {
+			for _, le := range spdxDoc.Files[i].LicenseInfoInFile {
+				f.Licenses = append(f.Licenses, license.Expression(le))
+			}
 		}
 
 		if err := bom.AddNode(&f); err != nil {

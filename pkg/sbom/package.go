@@ -3,10 +3,17 @@
 
 package sbom
 
-import "fmt"
+import (
+	"fmt"
+
+	"github.com/onesbom/onesbom/pkg/license"
+)
 
 type Package struct {
 	Element
+	SourceInfo  string
+	License     license.Expression
+	Identifiers []Identifier
 }
 
 func (p *Package) SetID(newID string) {
@@ -21,4 +28,9 @@ func (p *Package) linkDocument(doc *Document) error {
 		return fmt.Errorf("linking document")
 	}
 	return nil
+}
+
+type Identifier struct {
+	Type  string
+	Value string
 }

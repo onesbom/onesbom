@@ -3,11 +3,16 @@
 
 package sbom
 
-import "fmt"
+import (
+	"fmt"
+
+	"github.com/onesbom/onesbom/pkg/license"
+)
 
 type File struct {
 	Element
-	Types []string // File types
+	Types    []string             // File types
+	Licenses []license.Expression // License data found in file
 }
 
 func (f *File) SetID(newID string) {
