@@ -7,6 +7,7 @@ import "fmt"
 
 type File struct {
 	Element
+	Types []string // File types
 }
 
 func (f *File) SetID(newID string) {

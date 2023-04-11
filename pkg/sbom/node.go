@@ -6,4 +6,5 @@ package sbom
 type Node interface {
 	ID() string
 	linkDocument(*Document) error
+	Relationships() []Relationship
 }

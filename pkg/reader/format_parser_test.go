@@ -21,4 +21,5 @@ func TestSPDX23Parse(t *testing.T) {
 	require.Len(t, doc.Nodes, 1185, "unexpected node length (%d)", len(doc.Nodes))
 
 	require.Len(t, doc.RootElements(), 1)
+	require.Len(t, (*doc.RootElements()[0]).Relationships(), 8)
 }
