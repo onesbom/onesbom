@@ -14,6 +14,7 @@ type Element struct {
 	URL              string
 	Comment          string
 	LicenseComments  string
+	Copyright        string
 	LicenseConcluded license.Expression
 	Hashes           map[string]string
 }
