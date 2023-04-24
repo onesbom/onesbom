@@ -48,6 +48,13 @@ func TestSniffReader(t *testing.T) {
 			encoding:   "text",
 		},
 		{
+			filename:   "testdata/juice-shop-11.1.2.cdx.json",
+			mustError:  false,
+			version:    "1.4",
+			formatType: "cyclonedx",
+			encoding:   "json",
+		},
+		{
 			filename:  "testdata/syft.json",
 			mustError: true,
 		},

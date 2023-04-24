@@ -34,6 +34,22 @@ func (fs *FormatSniffer) SniffReader(f io.Reader) (formats.Format, error) {
 	formatVersion := ""
 
 	for fileScanner.Scan() {
+		if strings.Contains(fileScanner.Text(), `"bomFormat"`) && strings.Contains(fileScanner.Text(), `"CycloneDX"`) {
+			formatType = "application/vnd.cyclonedx"
+			formatEncoding = "json"
+		}
+
+		if strings.Contains(fileScanner.Text(), `"specVersion"`) {
+			parts := strings.Split(fileScanner.Text(), ":")
+			if len(parts) == 2 {
+				ver := strings.TrimPrefix(strings.TrimSuffix(strings.TrimSuffix(strings.TrimSpace(parts[1]), ","), "\""), "\"")
+				if ver != "" {
+					formatVersion = ver
+					formatEncoding = "json"
+				}
+			}
+		}
+
 		if strings.Contains(fileScanner.Text(), "SPDXVersion:") {
 			formatType = "text/spdx"
 			formatEncoding = "text"
@@ -62,9 +78,9 @@ func (fs *FormatSniffer) SniffReader(f io.Reader) (formats.Format, error) {
 				strings.Contains(fileScanner.Text(), fmt.Sprintf("\"SPDX-%s\"", ver)) {
 				formatVersion = ver
 			}
-			if formatVersion != "" && formatType != "" && formatEncoding != "" {
-				break
-			}
+		}
+		if formatVersion != "" && formatType != "" && formatEncoding != "" {
+			break
 		}
 	}
 
@@ -74,7 +90,7 @@ func (fs *FormatSniffer) SniffReader(f io.Reader) (formats.Format, error) {
 	)
 
 	for _, f := range formats.List {
-		if string(f) == fmt.Sprintf("%s;%s+%s", formatVersion, formatType, formatEncoding) {
+		if string(f) == fmt.Sprintf("%s+%s;version=%s", formatType, formatEncoding, formatVersion) {
 			return f, nil
 		}
 	}
