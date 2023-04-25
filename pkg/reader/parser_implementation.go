@@ -40,6 +40,8 @@ func (dpi *defaultParserImplementation) GetFormatParser(_ *Options, format forma
 	switch string(format) {
 	case "2.3;text/spdx+json":
 		return &SPDX23{}, nil
+	case "1.4;text/spdx+json":
+		return &SPDX23{}, nil
 	}
 
 	return nil, fmt.Errorf("no parser registered for %s", format)
