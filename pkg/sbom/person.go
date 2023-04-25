@@ -6,7 +6,10 @@ package sbom
 type Person struct {
 	Name        string
 	Email       string
-	Identifiers []PersonIdentifier
+	URL         string
+	Phone       string             // CDX
+	Contacts    []Person           // CDX
+	Identifiers []PersonIdentifier // SPDX
 }
 
 type PersonIdentifier struct {
