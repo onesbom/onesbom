@@ -5,11 +5,14 @@ package reader
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"strings"
 
-	v23 "github.com/onesbom/onesbom/pkg/formats/spdx/v23"
+	"github.com/onesbom/onesbom/pkg/formats/cyclonedx"
+	cdx14 "github.com/onesbom/onesbom/pkg/formats/cyclonedx/v14"
+	spdx23 "github.com/onesbom/onesbom/pkg/formats/spdx/v23"
 	"github.com/onesbom/onesbom/pkg/license"
 	"github.com/onesbom/onesbom/pkg/sbom"
 )
@@ -24,13 +27,13 @@ func GetFormatParser(formatString string) (FormatParser, error) {
 
 type SPDX23 struct{}
 
-func (spdx23 *SPDX23) Parse(opts *Options, f io.Reader) (*sbom.Document, error) {
-	return spdx23.ParseJSON(opts, f)
+func (s *SPDX23) Parse(opts *Options, f io.Reader) (*sbom.Document, error) {
+	return s.ParseJSON(opts, f)
 }
 
 // ParseJSON reads in a json stream and returns a new SBOM
-func (spdx23 *SPDX23) ParseJSON(opts *Options, f io.Reader) (*sbom.Document, error) {
-	spdxDoc := &v23.Document{}
+func (s *SPDX23) ParseJSON(opts *Options, f io.Reader) (*sbom.Document, error) {
+	spdxDoc := &spdx23.Document{}
 	dc := json.NewDecoder(f)
 	if err := dc.Decode(spdxDoc); err != nil {
 		return nil, fmt.Errorf("decoding document: %w", err)
@@ -42,7 +45,7 @@ func (spdx23 *SPDX23) ParseJSON(opts *Options, f io.Reader) (*sbom.Document, err
 	// Assign the document metadata
 	for i := range spdxDoc.Packages {
 		p := sbom.Package{}
-		p.SetID(strings.TrimPrefix(spdxDoc.Packages[i].ID, v23.IDPrefix))
+		p.SetID(strings.TrimPrefix(spdxDoc.Packages[i].ID, spdx23.IDPrefix))
 
 		p.Hashes = map[string]string{}
 		for _, cs := range spdxDoc.Packages[i].Checksums {
@@ -71,7 +74,7 @@ func (spdx23 *SPDX23) ParseJSON(opts *Options, f io.Reader) (*sbom.Document, err
 	// Assign the document metadata
 	for i := range spdxDoc.Files {
 		f := sbom.File{}
-		f.SetID(strings.TrimPrefix(spdxDoc.Files[i].ID, v23.IDPrefix))
+		f.SetID(strings.TrimPrefix(spdxDoc.Files[i].ID, spdx23.IDPrefix))
 
 		f.Hashes = map[string]string{}
 		for _, cs := range spdxDoc.Files[i].Checksums {
@@ -93,7 +96,7 @@ func (spdx23 *SPDX23) ParseJSON(opts *Options, f io.Reader) (*sbom.Document, err
 	// Add the root level elements
 	if spdxDoc.DocumentDescribes != nil {
 		for _, id := range spdxDoc.DocumentDescribes {
-			if err := bom.AddRootElementFromID(strings.TrimPrefix(id, v23.IDPrefix)); err != nil {
+			if err := bom.AddRootElementFromID(strings.TrimPrefix(id, spdx23.IDPrefix)); err != nil {
 				return nil, fmt.Errorf("adding root element: %s", err)
 			}
 		}
@@ -102,13 +105,134 @@ func (spdx23 *SPDX23) ParseJSON(opts *Options, f io.Reader) (*sbom.Document, err
 	// Add the document relationships
 	for _, rdata := range spdxDoc.Relationships {
 		if err := bom.AddRelationshipFromIDs(
-			strings.TrimPrefix(rdata.Element, v23.IDPrefix),
+			strings.TrimPrefix(rdata.Element, spdx23.IDPrefix),
 			rdata.Type,
-			strings.TrimPrefix(rdata.Related, v23.IDPrefix),
+			strings.TrimPrefix(rdata.Related, spdx23.IDPrefix),
 		); err != nil {
 			return nil, fmt.Errorf("adding new relationship to document: %w", err)
 		}
 	}
 
 	return bom, nil
+}
+
+type CDX14 struct{}
+
+func (cdx *CDX14) Parse(opts *Options, f io.Reader) (*sbom.Document, error) {
+	cdxDoc := &cdx14.Document{}
+
+	dc := json.NewDecoder(f)
+	if err := dc.Decode(cdxDoc); err != nil {
+		return nil, fmt.Errorf("decoding document: %w", err)
+	}
+
+	bom := &sbom.Document{}
+	root, err := componentToPackage(cdxDoc.Metadata.Component)
+	if err != nil {
+		return nil, fmt.Errorf("converting root component to package: %w", err)
+	}
+	bom.AddNode(&root)
+	if err := bom.AddRootElementFromID(root.ID()); err != nil {
+		return nil, fmt.Errorf("adding root element: %w", err)
+	}
+
+	// Add all the components
+	for _, comp := range cdxDoc.Components {
+		if comp.Type == cyclonedx.ComponentTypeFile {
+			// File
+		} else {
+			p, err := componentToPackage(comp)
+			if err != nil {
+				return nil, fmt.Errorf("converting component to package: %w", err)
+			}
+			bom.AddNode(&p)
+		}
+	}
+
+	// Add the relationships. Keep track to add those located because
+	// if not, we add them as direct (first level) deps
+	tracked := map[string]struct{}{}
+	for _, dep := range cdxDoc.Dependencies {
+		if dep.DependsOn == nil || len(dep.DependsOn) == 0 {
+			continue
+		}
+		for _, target := range dep.DependsOn {
+			// Consider soft error here from options
+			if err := bom.AddRelationshipFromIDs(dep.Ref, "DEPENDS_ON", target); err != nil {
+				return nil, fmt.Errorf("adding relationship: %w", err)
+			}
+			tracked[target] = struct{}{}
+		}
+	}
+
+	// CycloneDX components are related by default, so we add all that are not
+	// properly located to the first leve:
+	for _, comp := range cdxDoc.Components {
+		if _, ok := tracked[comp.Ref]; ok {
+			continue
+		}
+		if err := bom.AddRelationshipFromIDs(root.ID(), "DEPENDS_ON", comp.Ref); err != nil {
+			return nil, fmt.Errorf("adding default relationship to component: %w", err)
+		}
+	}
+	return bom, nil
+
+}
+
+// componentToPackage converts a CycloneDX component to a file
+func componentToPackage(component cdx14.Component) (sbom.Package, error) {
+	p := sbom.Package{}
+
+	if component.Type == cyclonedx.ComponentTypeFile {
+		return p, errors.New("component is a file, it should be convertyed to a file")
+	}
+
+	p.SetID(component.Ref)
+	p.Name = component.Name
+	p.Version = component.Version
+	p.Identifiers = append(p.Identifiers, sbom.Identifier{
+		Type:  "purl",
+		Value: component.Purl,
+	})
+	p.Description = component.Description
+	p.Hashes = map[string]string{}
+	for _, h := range component.Hashes {
+		algo, err := cdxAlgorithmToString(h.Algorithm)
+		if err != nil {
+			return p, fmt.Errorf("adding hash %s: %w", h, err)
+		}
+		p.Hashes[algo] = h.Content
+	}
+	licString := ""
+	for _, l := range component.Licenses {
+		if licString != "" {
+			licString += " AND "
+		}
+		licString += l.License.ID
+	}
+	p.License = license.Expression(licString)
+	for _, extid := range component.ExternalReferences {
+		p.Identifiers = append(p.Identifiers, sbom.Identifier{
+			Type:  extid.Type,
+			Value: extid.URL,
+		})
+	}
+	return p, nil
+}
+
+func cdxAlgorithmToString(algo string) (string, error) {
+	switch {
+	case strings.Contains(algo, "SHA-"):
+		return "SHA" + strings.TrimPrefix(algo, "SHA-"), nil
+	case strings.Contains(algo, "SHA3-"):
+		return "SHA3" + strings.TrimPrefix(algo, "SHA3-"), nil
+	default:
+		if _, ok := map[string]bool{
+			"MD5": true, "BLAKE2b-256": true, "BLAKE2b-384": true, "BLAKE2b-512": true, "BLAKE3": true,
+		}[algo]; ok {
+			return algo, nil
+		} else {
+			return "", errors.New("unknown algorithm")
+		}
+	}
 }
