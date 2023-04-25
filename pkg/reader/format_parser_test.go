@@ -4,6 +4,7 @@
 package reader
 
 import (
+	"fmt"
 	"os"
 	"testing"
 
@@ -32,4 +33,26 @@ func TestSPDX23Parse(t *testing.T) {
 	// Test licenses
 	require.Equal(t, license.Expression("Apache-2.0"), p.LicenseConcluded)
 	require.Equal(t, license.Expression("Apache-2.0"), p.License)
+}
+
+func TestCycloneDX14Parse(t *testing.T) {
+	sbomFile, err := os.Open("testdata/juice-shop-11.1.2.cdx.json")
+	require.NoError(t, err)
+	defer sbomFile.Close()
+
+	parser := CDX14{}
+	doc, err := parser.Parse(&Options{}, sbomFile)
+	require.NoError(t, err)
+	require.Len(t, doc.RootElements(), 1)
+
+	p, ok := (*doc.RootElements()[0]).(*sbom.Package)
+	require.True(t, ok)
+
+	// The identifiers include the purl, but also all the external
+	// identifiers of the root node (issue tracker, website, vcs)
+	require.Len(t, p.Identifiers, 4)
+	require.Equal(t, "pkg:npm/juice-shop@11.1.2", p.ID())
+	require.Len(t, doc.Nodes, 841, fmt.Errorf("number of nodes: %d", len(doc.Nodes)))
+
+	require.Len(t, p.Relationships(), 840)
 }
