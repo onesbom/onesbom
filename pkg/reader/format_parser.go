@@ -127,25 +127,29 @@ func (cdx *CDX14) Parse(opts *Options, f io.Reader) (*sbom.Document, error) {
 	}
 
 	bom := &sbom.Document{}
-	root, err := componentToPackage(cdxDoc.Metadata.Component)
+	root, err := componentToPackage(&cdxDoc.Metadata.Component)
 	if err != nil {
 		return nil, fmt.Errorf("converting root component to package: %w", err)
 	}
-	bom.AddNode(&root)
+	if err := bom.AddNode(&root); err != nil {
+		return nil, fmt.Errorf("adding root node from cyclone doc: %w", err)
+	}
 	if err := bom.AddRootElementFromID(root.ID()); err != nil {
 		return nil, fmt.Errorf("adding root element: %w", err)
 	}
 
 	// Add all the components
-	for _, comp := range cdxDoc.Components {
-		if comp.Type == cyclonedx.ComponentTypeFile {
+	for i := range cdxDoc.Components {
+		if cdxDoc.Components[i].Type == cyclonedx.ComponentTypeFile {
 			// File
 		} else {
-			p, err := componentToPackage(comp)
+			p, err := componentToPackage(&cdxDoc.Components[i])
 			if err != nil {
 				return nil, fmt.Errorf("converting component to package: %w", err)
 			}
-			bom.AddNode(&p)
+			if err := bom.AddNode(&p); err != nil {
+				return nil, fmt.Errorf("adding node from cdx component: %w", err)
+			}
 		}
 	}
 
@@ -167,20 +171,19 @@ func (cdx *CDX14) Parse(opts *Options, f io.Reader) (*sbom.Document, error) {
 
 	// CycloneDX components are related by default, so we add all that are not
 	// properly located to the first leve:
-	for _, comp := range cdxDoc.Components {
-		if _, ok := tracked[comp.Ref]; ok {
+	for i := range cdxDoc.Components {
+		if _, ok := tracked[cdxDoc.Components[i].Ref]; ok {
 			continue
 		}
-		if err := bom.AddRelationshipFromIDs(root.ID(), "DEPENDS_ON", comp.Ref); err != nil {
+		if err := bom.AddRelationshipFromIDs(root.ID(), "DEPENDS_ON", cdxDoc.Components[i].Ref); err != nil {
 			return nil, fmt.Errorf("adding default relationship to component: %w", err)
 		}
 	}
 	return bom, nil
-
 }
 
 // componentToPackage converts a CycloneDX component to a file
-func componentToPackage(component cdx14.Component) (sbom.Package, error) {
+func componentToPackage(component *cdx14.Component) (sbom.Package, error) {
 	p := sbom.Package{}
 
 	if component.Type == cyclonedx.ComponentTypeFile {
@@ -231,8 +234,7 @@ func cdxAlgorithmToString(algo string) (string, error) {
 			"MD5": true, "BLAKE2b-256": true, "BLAKE2b-384": true, "BLAKE2b-512": true, "BLAKE3": true,
 		}[algo]; ok {
 			return algo, nil
-		} else {
-			return "", errors.New("unknown algorithm")
 		}
+		return "", errors.New("unknown algorithm")
 	}
 }

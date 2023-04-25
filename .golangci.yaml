@@ -164,7 +164,6 @@ linters-settings:
       - initClause
       - nestingReduce
       - paramTypeCombine
-      - ptrToRefParam
       - typeUnparen
       - unnamedResult
       - unnecessaryBlock

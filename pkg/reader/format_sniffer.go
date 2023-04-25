@@ -36,7 +36,7 @@ func (fs *FormatSniffer) SniffReader(f io.Reader) (formats.Format, error) {
 	for fileScanner.Scan() {
 		if strings.Contains(fileScanner.Text(), `"bomFormat"`) && strings.Contains(fileScanner.Text(), `"CycloneDX"`) {
 			formatType = "application/vnd.cyclonedx"
-			formatEncoding = "json"
+			formatEncoding = formats.JSON
 		}
 
 		if strings.Contains(fileScanner.Text(), `"specVersion"`) {
@@ -45,7 +45,7 @@ func (fs *FormatSniffer) SniffReader(f io.Reader) (formats.Format, error) {
 				ver := strings.TrimPrefix(strings.TrimSuffix(strings.TrimSuffix(strings.TrimSpace(parts[1]), ","), "\""), "\"")
 				if ver != "" {
 					formatVersion = ver
-					formatEncoding = "json"
+					formatEncoding = formats.JSON
 				}
 			}
 		}
@@ -67,7 +67,7 @@ func (fs *FormatSniffer) SniffReader(f io.Reader) (formats.Format, error) {
 		if strings.Contains(fileScanner.Text(), "\"spdxVersion\"") ||
 			strings.Contains(fileScanner.Text(), "'spdxVersion'") {
 			formatType = "text/spdx"
-			formatEncoding = "json"
+			formatEncoding = formats.JSON
 			if formatVersion != "" {
 				break
 			}
