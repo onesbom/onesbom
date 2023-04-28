@@ -7,16 +7,15 @@ import (
 	"fmt"
 	"io"
 
+	"github.com/onesbom/onesbom/pkg/reader/options"
 	"github.com/onesbom/onesbom/pkg/sbom"
 )
 
-type Options struct{}
-
-var defaultOptions = Options{}
+var defaultOptions = options.Options{}
 
 type Parser struct {
 	impl    parserImplementation
-	Options Options
+	Options options.Options
 }
 
 func New() *Parser {

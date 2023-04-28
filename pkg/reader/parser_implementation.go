@@ -9,12 +9,15 @@ import (
 	"os"
 
 	"github.com/onesbom/onesbom/pkg/formats"
+	cdx14 "github.com/onesbom/onesbom/pkg/reader/cyclonedx/v14"
+	"github.com/onesbom/onesbom/pkg/reader/options"
+	spdx23 "github.com/onesbom/onesbom/pkg/reader/spdx/v23"
 )
 
 type parserImplementation interface {
 	OpenDocumentFile(string) (io.Reader, error)
-	DetectFormat(*Options, io.Reader) (formats.Format, error)
-	GetFormatParser(*Options, formats.Format) (FormatParser, error)
+	DetectFormat(*options.Options, io.Reader) (formats.Format, error)
+	GetFormatParser(*options.Options, formats.Format) (FormatParser, error)
 }
 
 type defaultParserImplementation struct{}
@@ -27,7 +30,7 @@ func (dpi *defaultParserImplementation) OpenDocumentFile(path string) (io.Reader
 	return f, nil
 }
 
-func (dpi *defaultParserImplementation) DetectFormat(_ *Options, f io.Reader) (formats.Format, error) {
+func (dpi *defaultParserImplementation) DetectFormat(_ *options.Options, f io.Reader) (formats.Format, error) {
 	sniffer := FormatSniffer{}
 	format, err := sniffer.SniffReader(f)
 	if err != nil {
@@ -36,12 +39,12 @@ func (dpi *defaultParserImplementation) DetectFormat(_ *Options, f io.Reader) (f
 	return format, nil
 }
 
-func (dpi *defaultParserImplementation) GetFormatParser(_ *Options, format formats.Format) (FormatParser, error) {
+func (dpi *defaultParserImplementation) GetFormatParser(_ *options.Options, format formats.Format) (FormatParser, error) {
 	switch string(format) {
 	case "2.3;text/spdx+json":
-		return &SPDX23{}, nil
+		return &spdx23.Parser{}, nil
 	case "1.4;text/spdx+json":
-		return &SPDX23{}, nil
+		return &cdx14.Parser{}, nil
 	}
 
 	return nil, fmt.Errorf("no parser registered for %s", format)
