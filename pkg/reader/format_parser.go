@@ -171,15 +171,29 @@ func (cdx *CDX14) Parse(opts *Options, f io.Reader) (*sbom.Document, error) {
 
 	// CycloneDX components are related by default, so we add all that are not
 	// properly located to the first leve:
-	for i := range cdxDoc.Components {
-		if _, ok := tracked[cdxDoc.Components[i].Ref]; ok {
+	if err := addComponents(bom, cdxDoc.Components, root.ID(), tracked); err != nil {
+		return nil, fmt.Errorf("adding components: %w", err)
+	}
+
+	return bom, nil
+}
+
+func addComponents(bom *sbom.Document, comps []cdx14.Component, parentID string, tracked map[string]struct{}) error {
+	for i := range comps {
+		if _, ok := tracked[comps[i].Ref]; ok {
 			continue
 		}
-		if err := bom.AddRelationshipFromIDs(root.ID(), "DEPENDS_ON", cdxDoc.Components[i].Ref); err != nil {
-			return nil, fmt.Errorf("adding default relationship to component: %w", err)
+		if err := bom.AddRelationshipFromIDs(parentID, "CONTAINS", comps[i].Ref); err != nil {
+			return fmt.Errorf("adding default relationship to component: %w", err)
+		}
+
+		if comps[i].Components != nil {
+			if err := addComponents(bom, comps[i].Components, comps[i].Ref, tracked); err != nil {
+				return err
+			}
 		}
 	}
-	return bom, nil
+	return nil
 }
 
 // componentToPackage converts a CycloneDX component to a file

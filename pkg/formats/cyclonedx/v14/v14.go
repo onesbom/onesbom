@@ -41,6 +41,7 @@ type Component struct {
 	Purl               string              `json:"purl,omitempty"`
 	Description        string              `json:"description"`
 	Hashes             []Hash              `json:"hashes"`
+	Components         []Component         `json:"components"`
 	Licenses           []License           `json:"licenses,omitempty"`
 	ExternalReferences []ExternalReference `json:"externalReferences"`
 }
