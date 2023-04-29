@@ -122,7 +122,8 @@ func (doc *Document) AddRootElement(node *Node) error {
 
 	for i := range doc.rootElements {
 		if *doc.rootElements[i] == *node {
-			return fmt.Errorf("node is already a root level node")
+			// Warn("node is already a root level node")
+			return nil
 		}
 	}
 

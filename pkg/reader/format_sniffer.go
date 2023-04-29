@@ -94,5 +94,7 @@ func (fs *FormatSniffer) SniffReader(f io.Reader) (formats.Format, error) {
 			return f, nil
 		}
 	}
+
+	// TODO(puerco): Implement a light parser in case the string hacks don't work
 	return "", fmt.Errorf("unknown SBOM format")
 }
