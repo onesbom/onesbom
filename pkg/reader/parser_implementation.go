@@ -16,14 +16,14 @@ import (
 )
 
 type parserImplementation interface {
-	OpenDocumentFile(string) (io.Reader, error)
-	DetectFormat(*options.Options, io.Reader) (formats.Format, error)
+	OpenDocumentFile(string) (*os.File, error)
+	DetectFormat(*options.Options, io.ReadSeeker) (formats.Format, error)
 	GetFormatParser(*options.Options, formats.Format) (FormatParser, error)
 }
 
 type defaultParserImplementation struct{}
 
-func (dpi *defaultParserImplementation) OpenDocumentFile(path string) (io.Reader, error) {
+func (dpi *defaultParserImplementation) OpenDocumentFile(path string) (*os.File, error) {
 	f, err := os.Open(path)
 	if err != nil {
 		return nil, fmt.Errorf("opening document file %w", err)
@@ -31,7 +31,7 @@ func (dpi *defaultParserImplementation) OpenDocumentFile(path string) (io.Reader
 	return f, nil
 }
 
-func (dpi *defaultParserImplementation) DetectFormat(_ *options.Options, f io.Reader) (formats.Format, error) {
+func (dpi *defaultParserImplementation) DetectFormat(_ *options.Options, f io.ReadSeeker) (formats.Format, error) {
 	sniffer := FormatSniffer{}
 	format, err := sniffer.SniffReader(f)
 	if err != nil {

@@ -31,12 +31,13 @@ func (p *Parser) ParseFile(path string) (*sbom.Document, error) {
 	if err != nil {
 		return nil, fmt.Errorf("opening SBOM file: %w", err)
 	}
+	defer f.Close()
 
 	return p.ParseReader(f)
 }
 
 // Parser returns a document from a reader
-func (p *Parser) ParseReader(f io.Reader) (*sbom.Document, error) {
+func (p *Parser) ParseReader(f io.ReadSeeker) (*sbom.Document, error) {
 	format, err := p.impl.DetectFormat(&p.Options, f)
 	if err != nil {
 		return nil, fmt.Errorf("detecting SBOM format: %w", err)

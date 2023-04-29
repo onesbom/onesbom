@@ -25,7 +25,8 @@ func (fs *FormatSniffer) SniffFile(path string) (formats.Format, error) {
 }
 
 // SniffReader reads a stream and return the SBOM format
-func (fs *FormatSniffer) SniffReader(f io.Reader) (formats.Format, error) {
+func (fs *FormatSniffer) SniffReader(f io.ReadSeeker) (formats.Format, error) {
+	defer f.Seek(0, 0)
 	fileScanner := bufio.NewScanner(f)
 	fileScanner.Split(bufio.ScanLines)
 
