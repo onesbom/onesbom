@@ -38,6 +38,7 @@ type Package struct {
 	Filename             string                   `json:"packageFileName"`
 	HomePage             string                   `json:"homepage,omitempty"`
 	Summary              string                   `json:"summary,omitempty"`
+	Comment              string                   `json:"comment,omitempty"`
 	Attribution          *[]string                `json:"attributionTexts,omitempty"`
 	HasFiles             []string                 `json:"hasFiles,omitempty"`
 	LicenseInfoFromFiles []string                 `json:"licenseInfoFromFiles,omitempty"`

@@ -12,16 +12,17 @@ import (
 
 type Package struct {
 	Element
-	SourceInfo       string
-	PrimaryPurpose   string // APPLICATION | FRAMEWORK | LIBRARY | CONTAINER | OPERATING-SYSTEM | DEVICE | FIRMWARE | SOURCE | ARCHIVE | FILE | INSTALL | OTHER |
-	Version          string
-	FileName         string
-	Summary          string
-	Description      string
-	Attribution      *[]string
-	DownloadLocation string // Location to download the package
-	URL              string // URL to get more info about the package
-	Copyright        string
+	SourceInfo       string    // any relevant background information or additional comments about the origin
+	PrimaryPurpose   string    // APPLICATION | FRAMEWORK | LIBRARY | CONTAINER | OPERATING-SYSTEM | DEVICE | FIRMWARE | SOURCE | ARCHIVE | FILE | INSTALL | OTHER |
+	Version          string    // Version string
+	FileName         string    // Package filename when there is one
+	Summary          string    // Short package description
+	Description      string    // Package description (full)
+	Attribution      *[]string // One or more attribution texts
+	DownloadLocation string    // Location to download the package
+	URL              string    // URL to get more info about the package
+	Copyright        string    // Copyright text blob
+	Comment          string    // Any comment
 	Supplier         *Person
 	Originator       *Person
 	ReleaseDate      *time.Time
