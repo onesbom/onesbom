@@ -14,7 +14,7 @@ import (
 )
 
 func TestParse(t *testing.T) {
-	sbomFile, err := os.Open("testdata/juice-shop-11.1.2.cdx.json")
+	sbomFile, err := os.Open("../../testdata/juice-shop-11.1.2.cdx.json")
 	require.NoError(t, err)
 	defer sbomFile.Close()
 
