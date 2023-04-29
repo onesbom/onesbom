@@ -6,6 +6,7 @@ import (
 	"io"
 	"strings"
 
+	"github.com/onesbom/onesbom/pkg/formats/spdx"
 	spdx23 "github.com/onesbom/onesbom/pkg/formats/spdx/v23"
 	"github.com/onesbom/onesbom/pkg/license"
 	"github.com/onesbom/onesbom/pkg/reader/options"
@@ -31,8 +32,29 @@ func (s *Parser) ParseJSON(opts *options.Options, f io.Reader) (*sbom.Document, 
 
 	// Assign the document metadata
 	for i := range spdxDoc.Packages {
-		p := sbom.Package{}
+		p := sbom.Package{
+			Version:        spdxDoc.Packages[i].Version,
+			FileName:       spdxDoc.Packages[i].Filename,
+			Description:    spdxDoc.Packages[i].Description,
+			PrimaryPurpose: spdxDoc.Packages[i].PrimaryPurpose, // [ "OTHER", "INSTALL", "ARCHIVE", "FIRMWARE", "APPLICATION", "FRAMEWORK", "LIBRARY", "CONTAINER", "SOURCE", "DEVICE", "OPERATING_SYSTEM", "FILE" ]
+		}
 		p.SetID(strings.TrimPrefix(spdxDoc.Packages[i].ID, spdx23.IDPrefix))
+
+		if spdxDoc.Packages[i].DownloadLocation != spdx.NOASSERTION {
+			p.DownloadLocation = spdxDoc.Packages[i].DownloadLocation
+		}
+
+		if spdxDoc.Packages[i].HomePage != spdx.NOASSERTION {
+			p.URL = spdxDoc.Packages[i].HomePage
+		}
+
+		if spdxDoc.Packages[i].Summary != spdx.NOASSERTION {
+			p.Summary = spdxDoc.Packages[i].Summary
+		}
+
+		if spdxDoc.Packages[i].CopyrightText != spdx.NOASSERTION {
+			p.Copyright = spdxDoc.Packages[i].CopyrightText
+		}
 
 		p.Hashes = map[string]string{}
 		for _, cs := range spdxDoc.Packages[i].Checksums {
@@ -50,8 +72,13 @@ func (s *Parser) ParseJSON(opts *options.Options, f io.Reader) (*sbom.Document, 
 		}
 
 		// License data
-		p.License = license.Expression(spdxDoc.Packages[i].LicenseDeclared)
-		p.LicenseConcluded = license.Expression(spdxDoc.Packages[i].LicenseConcluded)
+		if spdxDoc.Packages[i].LicenseDeclared != spdx.NOASSERTION {
+			p.License = license.Expression(spdxDoc.Packages[i].LicenseDeclared)
+		}
+
+		if spdxDoc.Packages[i].LicenseConcluded != spdx.NOASSERTION {
+			p.LicenseConcluded = license.Expression(spdxDoc.Packages[i].LicenseConcluded)
+		}
 
 		if err := bom.AddNode(&p); err != nil {
 			return nil, fmt.Errorf("adding package to document: %w", err)
@@ -91,6 +118,17 @@ func (s *Parser) ParseJSON(opts *options.Options, f io.Reader) (*sbom.Document, 
 
 	// Add the document relationships
 	for _, rdata := range spdxDoc.Relationships {
+		// If the source is the document, we add it as a root
+		if rdata.Element == spdxDoc.ID {
+			if err := bom.AddRootElementFromID(strings.TrimPrefix(rdata.Related, spdx23.IDPrefix)); err != nil {
+				return nil, fmt.Errorf("adding root element from relationship: %w", err)
+			}
+			if rdata.Type != string(sbom.DESCRIBES) {
+				// warn here if its a differente relationship
+			}
+			continue
+		}
+
 		if err := bom.AddRelationshipFromIDs(
 			strings.TrimPrefix(rdata.Element, spdx23.IDPrefix),
 			rdata.Type,

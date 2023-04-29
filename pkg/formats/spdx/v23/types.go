@@ -35,6 +35,10 @@ type Package struct {
 	SourceInfo           string                   `json:"sourceInfo,omitempty"`
 	CopyrightText        string                   `json:"copyrightText"`
 	PrimaryPurpose       string                   `json:"primaryPackagePurpose,omitempty"`
+	Filename             string                   `json:"packageFileName"`
+	HomePage             string                   `json:"homepage,omitempty"`
+	Summary              string                   `json:"summary,omitempty"`
+	Attribution          *[]string                `json:"attributionTexts,omitempty"`
 	HasFiles             []string                 `json:"hasFiles,omitempty"`
 	LicenseInfoFromFiles []string                 `json:"licenseInfoFromFiles,omitempty"`
 	Checksums            []Checksum               `json:"checksums"`

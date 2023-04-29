@@ -34,8 +34,12 @@ type Package struct {
 	Originator           string                   `json:"originator,omitempty"`
 	SourceInfo           string                   `json:"sourceInfo,omitempty"`
 	CopyrightText        string                   `json:"copyrightText"`
+	Filename             string                   `json:"packageFileName,omitempty"`
+	HomePage             string                   `json:"homepage,omitempty"`
+	Summary              string                   `json:"summary,omitempty"`
 	HasFiles             []string                 `json:"hasFiles,omitempty"`
 	LicenseInfoFromFiles []string                 `json:"licenseInfoFromFiles,omitempty"`
+	Attribution          *[]string                `json:"attributionTexts,omitempty"`
 	Checksums            []Checksum               `json:"checksums"`
 	ExternalRefs         []ExternalRef            `json:"externalRefs,omitempty"`
 	VerificationCode     *PackageVerificationCode `json:"packageVerificationCode,omitempty"`

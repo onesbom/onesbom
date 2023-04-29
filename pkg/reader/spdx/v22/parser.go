@@ -31,8 +31,32 @@ func (s *Parser) ParseJSON(opts *options.Options, f io.Reader) (*sbom.Document, 
 
 	// Assign the document metadata
 	for i := range spdxDoc.Packages {
-		p := sbom.Package{}
+		p := sbom.Package{
+			Version:          spdxDoc.Packages[i].Version,
+			FileName:         spdxDoc.Packages[i].Filename,
+			Description:      spdxDoc.Packages[i].Description,
+			DownloadLocation: spdxDoc.Packages[i].DownloadLocation,
+			URL:              spdxDoc.Packages[i].HomePage,
+			Summary:          spdxDoc.Packages[i].Summary,
+			Copyright:        spdxDoc.Packages[i].CopyrightText,
+		}
+
+		p.Name = spdxDoc.Packages[i].Name
 		p.SetID(strings.TrimPrefix(spdxDoc.Packages[i].ID, spdx23.IDPrefix))
+
+		if spdxDoc.Packages[i].Attribution != nil && len(spdxDoc.Packages[i].Summary) > 0 {
+			attribs := []string{}
+			for _, at := range *(spdxDoc.Packages[i].Attribution) {
+				attribs = append(attribs, at)
+			}
+			p.Attribution = &attribs
+		}
+
+		// TODO(puerco): ReleaseDate en 2.3
+		// TODO(puerco): BuiltDate en 2.3
+		// TODO(puerco): ValidUntilDate en 2.3
+		// TODO(puerco): Parse supplier
+		// TODO(puerco): Parse originator
 
 		p.Hashes = map[string]string{}
 		for _, cs := range spdxDoc.Packages[i].Checksums {
@@ -42,6 +66,7 @@ func (s *Parser) ParseJSON(opts *options.Options, f io.Reader) (*sbom.Document, 
 		if spdxDoc.Packages[i].ExternalRefs != nil {
 			p.Identifiers = []sbom.Identifier{}
 			for _, extid := range spdxDoc.Packages[i].ExternalRefs {
+				// TODO(puerco): Validate ExtRef Types
 				p.Identifiers = append(p.Identifiers, sbom.Identifier{
 					Type:  extid.Type,
 					Value: extid.Locator,
@@ -91,6 +116,17 @@ func (s *Parser) ParseJSON(opts *options.Options, f io.Reader) (*sbom.Document, 
 
 	// Add the document relationships
 	for _, rdata := range spdxDoc.Relationships {
+		// If the source is the document, we add it as a root
+		if rdata.Element == spdxDoc.ID {
+			if err := bom.AddRootElementFromID(strings.TrimPrefix(rdata.Related, spdx23.IDPrefix)); err != nil {
+				return nil, fmt.Errorf("adding root element from relationship: %w", err)
+			}
+			if rdata.Type != string(sbom.DESCRIBES) {
+				// warn here if its a differente relationship
+			}
+			continue
+		}
+
 		if err := bom.AddRelationshipFromIDs(
 			strings.TrimPrefix(rdata.Element, spdx23.IDPrefix),
 			rdata.Type,
