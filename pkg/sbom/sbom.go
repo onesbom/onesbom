@@ -10,7 +10,7 @@ import (
 
 type Document struct {
 	Metadata      interface{}
-	Nodes         []Node
+	Nodes         NodeList
 	Relationships []Relationship
 	rootElements  NodeList
 }
