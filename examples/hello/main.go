@@ -18,9 +18,9 @@ func main() {
 
 	fmt.Printf("This SBOM describes %d elements\n", len(doc.RootElements()))
 	for _, e := range doc.RootElements() {
-		if p, ok := (*e).(*sbom.Package); ok {
+		if p, ok := e.(*sbom.Package); ok {
 			fmt.Printf(" - %s@%s\n", p.Name, p.Version)
-		} else if f, ok := (*e).(*sbom.File); ok {
+		} else if f, ok := e.(*sbom.File); ok {
 			fmt.Printf(" - %v\n", f.Name)
 		}
 	}

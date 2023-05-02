@@ -23,7 +23,7 @@ func TestParse(t *testing.T) {
 	require.NoError(t, err)
 	require.Len(t, doc.RootElements(), 1)
 
-	p, ok := (*doc.RootElements()[0]).(*sbom.Package)
+	p, ok := doc.RootElements()[0].(*sbom.Package)
 	require.True(t, ok)
 
 	// The identifiers include the purl, but also all the external

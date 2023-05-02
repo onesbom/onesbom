@@ -3,4 +3,4 @@
 
 package sbom
 
-type NodeList []*Node
+type NodeList []Node

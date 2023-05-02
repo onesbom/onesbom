@@ -121,13 +121,13 @@ func (doc *Document) AddRootElement(node *Node) error {
 	}
 
 	for i := range doc.rootElements {
-		if *doc.rootElements[i] == *node {
+		if doc.rootElements[i] == *node {
 			// Warn("node is already a root level node")
 			return nil
 		}
 	}
 
-	doc.rootElements = append(doc.rootElements, node)
+	doc.rootElements = append(doc.rootElements, *node)
 	return nil
 }
 
