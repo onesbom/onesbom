@@ -70,7 +70,11 @@ func (rt *RelationshipType) SPDX3() string {
 }
 
 type Relationship struct {
-	Source *Node
-	Target *Node
+	Source Node
+	Target Node
 	Type   RelationshipType
+}
+
+func (r *Relationship) NodeList() NodeList {
+	return NodeList{r.Source, r.Target}
 }

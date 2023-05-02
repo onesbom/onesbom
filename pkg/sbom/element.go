@@ -27,7 +27,7 @@ func (e *Element) ID() string {
 func (e *Element) Relationships() []Relationship {
 	rels := []Relationship{}
 	for _, r := range e.document.Relationships {
-		if (*r.Source).ID() == e.ID() {
+		if r.Source.ID() == e.ID() {
 			rels = append(rels, r)
 		}
 	}

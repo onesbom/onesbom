@@ -62,11 +62,11 @@ func (doc *Document) AddRelationshipFromIDs(sourceID, relType, destID string) er
 		return fmt.Errorf("unable to find destination element with ID %s", sourceID)
 	}
 
-	return doc.AddRelationship(sourceElement, relType, destElement)
+	return doc.AddRelationship(*sourceElement, relType, *destElement)
 }
 
 // CreateRelationship adds a new relationship to the document
-func (doc *Document) AddRelationship(sourceElement *Node, relType string, destElement *Node) error {
+func (doc *Document) AddRelationship(sourceElement Node, relType string, destElement Node) error {
 	if sourceElement == nil {
 		return errors.New("source element is nil")
 	}
@@ -76,10 +76,10 @@ func (doc *Document) AddRelationship(sourceElement *Node, relType string, destEl
 
 	var foundSource, foundDest bool
 	for _, n := range doc.Nodes {
-		if *sourceElement == n {
+		if sourceElement == n {
 			foundSource = true
 		}
-		if *destElement == n {
+		if destElement == n {
 			foundDest = true
 		}
 
