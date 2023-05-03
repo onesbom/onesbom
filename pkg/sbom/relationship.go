@@ -1,6 +1,7 @@
 // SPDX-FileCopyrightText: Copyright 2023 The OneSBOM Authors
 // SPDX-License-Identifier: Apache-2.0
 
+//nolint:revive,stylecheck // We use uppercase names to match the SPDX list
 package sbom
 
 import "strings"
@@ -75,6 +76,6 @@ type Relationship struct {
 	Type   RelationshipType
 }
 
-func (r *Relationship) NodeList() NodeList {
-	return NodeList{r.Source, r.Target}
+func (r *Relationship) NodeList() *NodeList {
+	return &NodeList{r.Source, r.Target}
 }
