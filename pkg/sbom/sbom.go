@@ -44,13 +44,13 @@ func (doc *Document) AddRelationshipFromIDs(sourceID, relType, destID string) er
 	if destID == "" {
 		return fmt.Errorf("destination ID cannot be an empty string")
 	}
-	var sourceElement, destElement *Node
+	var sourceElement, destElement Node
 	for i := range doc.Nodes {
 		if doc.Nodes[i].ID() == sourceID {
-			sourceElement = &doc.Nodes[i]
+			sourceElement = doc.Nodes[i]
 		}
 		if doc.Nodes[i].ID() == destID {
-			destElement = &doc.Nodes[i]
+			destElement = doc.Nodes[i]
 		}
 	}
 
@@ -62,11 +62,11 @@ func (doc *Document) AddRelationshipFromIDs(sourceID, relType, destID string) er
 		return fmt.Errorf("unable to find destination element with ID %s", sourceID)
 	}
 
-	return doc.AddRelationship(*sourceElement, relType, *destElement)
+	return doc.AddRelationship(sourceElement, relType, &NodeList{destElement})
 }
 
 // CreateRelationship adds a new relationship to the document
-func (doc *Document) AddRelationship(sourceElement Node, relType string, destElement Node) error {
+func (doc *Document) AddRelationship(sourceElement Node, relType string, destElement *NodeList) error {
 	if sourceElement == nil {
 		return errors.New("source element is nil")
 	}
@@ -79,7 +79,15 @@ func (doc *Document) AddRelationship(sourceElement Node, relType string, destEle
 		if sourceElement == n {
 			foundSource = true
 		}
-		if destElement == n {
+
+		// look for the target nodes
+		foundDestinations := 0
+		for _, sb := range *destElement {
+			if sb == n {
+				foundDestinations++
+			}
+		}
+		if foundDestinations == len(*destElement) {
 			foundDest = true
 		}
 
