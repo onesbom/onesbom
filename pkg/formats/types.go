@@ -18,6 +18,8 @@ const (
 	CDX15JSON  = Format("application/vnd.cyclonedx+json;version=1.5")
 )
 
+type Document interface{}
+
 var List = []Format{SPDX23TV, SPDX23JSON, SPDX22TV, SPDX22JSON, CDX14JSON, CDX15JSON}
 
 // Version returns the version of the format

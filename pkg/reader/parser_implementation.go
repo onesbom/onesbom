@@ -46,7 +46,7 @@ func (dpi *defaultParserImplementation) GetFormatParser(_ *options.Options, form
 		return &spdx23.Parser{}, nil
 	case "text/spdx+json;version=2.2":
 		return &spdx22.Parser{}, nil
-	case "text/spdx+json;version=1.4":
+	case "application/vnd.cyclonedx+json;version=1.4":
 		return &cdx14.Parser{}, nil
 	}
 

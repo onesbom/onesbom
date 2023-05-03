@@ -32,6 +32,7 @@ type Package struct {
 	Description          string                   `json:"description,omitempty"`
 	DownloadLocation     string                   `json:"downloadLocation"`
 	Originator           string                   `json:"originator,omitempty"`
+	Supplier             string                   `json:"supplier,omitempty"`
 	SourceInfo           string                   `json:"sourceInfo,omitempty"`
 	CopyrightText        string                   `json:"copyrightText"`
 	PrimaryPurpose       string                   `json:"primaryPackagePurpose,omitempty"`
