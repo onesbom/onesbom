@@ -6,6 +6,7 @@ import (
 	"io"
 	"strings"
 
+	"github.com/onesbom/onesbom/pkg/formats/spdx"
 	spdx23 "github.com/onesbom/onesbom/pkg/formats/spdx/v23"
 	"github.com/onesbom/onesbom/pkg/license"
 	"github.com/onesbom/onesbom/pkg/reader/options"
@@ -72,6 +73,28 @@ func (s *Parser) ParseJSON(opts *options.Options, f io.Reader) (*sbom.Document, 
 					Type:  extid.Type,
 					Value: extid.Locator,
 				})
+			}
+		}
+
+		if spdxDoc.Packages[i].Supplier != "" {
+			actorType, actorName, actorEmail := spdx.ParseActorString(spdxDoc.Packages[i].Supplier)
+			if actorType != "" {
+				p.Supplier = &sbom.Person{
+					Name:  actorName,
+					Email: actorEmail,
+					IsOrg: (actorType == "org"),
+				}
+			}
+		}
+
+		if spdxDoc.Packages[i].Originator != "" {
+			actorType, actorName, actorEmail := spdx.ParseActorString(spdxDoc.Packages[i].Originator)
+			if actorType != "" {
+				p.Originator = &sbom.Person{
+					Name:  actorName,
+					Email: actorEmail,
+					IsOrg: (actorType == "org"),
+				}
 			}
 		}
 
