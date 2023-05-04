@@ -72,6 +72,28 @@ func (s *Parser) ParseJSON(opts *options.Options, f io.Reader) (*sbom.Document, 
 			}
 		}
 
+		if spdxDoc.Packages[i].Supplier != "" {
+			actorType, actorName, actorEmail := spdx.ParseActorString(spdxDoc.Packages[i].Supplier)
+			if actorType != "" {
+				p.Supplier = &sbom.Person{
+					Name:  actorName,
+					Email: actorEmail,
+					IsOrg: (actorType == "org"),
+				}
+			}
+		}
+
+		if spdxDoc.Packages[i].Originator != "" {
+			actorType, actorName, actorEmail := spdx.ParseActorString(spdxDoc.Packages[i].Originator)
+			if actorType != "" {
+				p.Originator = &sbom.Person{
+					Name:  actorName,
+					Email: actorEmail,
+					IsOrg: (actorType == "org"),
+				}
+			}
+		}
+
 		// License data
 		if spdxDoc.Packages[i].LicenseDeclared != spdx.NOASSERTION {
 			p.License = license.Expression(spdxDoc.Packages[i].LicenseDeclared)
