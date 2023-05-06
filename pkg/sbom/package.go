@@ -18,11 +18,8 @@ type Package struct {
 	FileName         string    // Package filename when there is one
 	Summary          string    // Short package description
 	Description      string    // Package description (full)
-	Attribution      *[]string // One or more attribution texts
 	DownloadLocation string    // Location to download the package
-	URL              string    // URL to get more info about the package
-	Copyright        string    // Copyright text blob
-	Comment          string    // Any comment
+	Attribution      *[]string // One or more attribution texts
 	Supplier         *Person
 	Originator       *Person
 	ReleaseDate      *time.Time
