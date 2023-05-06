@@ -11,10 +11,10 @@ type Element struct {
 	document         *Document
 	id               string
 	Name             string
-	URL              string
-	Comment          string
+	URL              string // URL to get more info about the package
+	Comment          string // Any comment
+	Copyright        string // Copyright text blob
 	LicenseComments  string
-	Copyright        string
 	LicenseConcluded license.Expression
 	Hashes           map[string]string
 }
