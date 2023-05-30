@@ -3,6 +3,8 @@
 
 package v23
 
+import "time"
+
 const (
 	Version  = "SPDX-2.3"
 	IDPrefix = "SPDXRef-"
@@ -40,6 +42,9 @@ type Package struct {
 	HomePage             string                   `json:"homepage,omitempty"`
 	Summary              string                   `json:"summary,omitempty"`
 	Comment              string                   `json:"comment,omitempty"`
+	ReleaseDate          *time.Time               `json:"ReleaseDate,omitempty"`
+	BuildDate            *time.Time               `json:"BuildDate,omitempty"`
+	ValidUntilDate       *time.Time               `json:"validUntilDate,omitempty"`
 	Attribution          *[]string                `json:"attributionTexts,omitempty"`
 	HasFiles             []string                 `json:"hasFiles,omitempty"`
 	LicenseInfoFromFiles []string                 `json:"licenseInfoFromFiles,omitempty"`
