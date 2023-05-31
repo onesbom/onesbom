@@ -33,14 +33,19 @@ func (s *Parser) ParseJSON(opts *options.Options, f io.Reader) (*sbom.Document, 
 	// Assign the document metadata
 	for i := range spdxDoc.Packages {
 		p := sbom.Package{
+			Element: sbom.Element{
+				Name:             spdxDoc.Packages[i].Name,
+				URL:              spdxDoc.Packages[i].HomePage,
+				Comment:          spdxDoc.Packages[i].Comment,
+				Copyright:        spdxDoc.Packages[i].CopyrightText,
+				LicenseConcluded: license.Expression(spdxDoc.Packages[i].LicenseConcluded),
+				Hashes:           map[string]string{},
+			},
 			Version:          spdxDoc.Packages[i].Version,
 			FileName:         spdxDoc.Packages[i].Filename,
 			Description:      spdxDoc.Packages[i].Description,
 			DownloadLocation: spdxDoc.Packages[i].DownloadLocation,
-			URL:              spdxDoc.Packages[i].HomePage,
 			Summary:          spdxDoc.Packages[i].Summary,
-			Copyright:        spdxDoc.Packages[i].CopyrightText,
-			Comment:          spdxDoc.Packages[i].Comment,
 		}
 
 		p.Name = spdxDoc.Packages[i].Name
