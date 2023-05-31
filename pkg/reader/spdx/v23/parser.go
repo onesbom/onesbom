@@ -33,10 +33,13 @@ func (s *Parser) ParseJSON(opts *options.Options, f io.Reader) (*sbom.Document, 
 	// Assign the document metadata
 	for i := range spdxDoc.Packages {
 		p := sbom.Package{
+			Element: sbom.Element{
+				Name:    spdxDoc.Packages[i].Name,
+				Comment: spdxDoc.Packages[i].Comment,
+			},
 			Version:        spdxDoc.Packages[i].Version,
 			FileName:       spdxDoc.Packages[i].Filename,
 			Description:    spdxDoc.Packages[i].Description,
-			Comment:        spdxDoc.Packages[i].Comment,
 			PrimaryPurpose: spdxDoc.Packages[i].PrimaryPurpose, // [ "OTHER", "INSTALL", "ARCHIVE", "FIRMWARE", "APPLICATION", "FRAMEWORK", "LIBRARY", "CONTAINER", "SOURCE", "DEVICE", "OPERATING_SYSTEM", "FILE" ]
 		}
 		p.SetID(strings.TrimPrefix(spdxDoc.Packages[i].ID, spdx23.IDPrefix))
