@@ -57,9 +57,12 @@ type File struct {
 	ID                string     `json:"SPDXID"`
 	Name              string     `json:"fileName"`
 	CopyrightText     string     `json:"copyrightText"`
+	Comment           string     `json:"comment,omitempty"`
 	NoticeText        string     `json:"noticeText,omitempty"`
 	LicenseConcluded  string     `json:"licenseConcluded,omitempty"`
+	LicenseComments   string     `json:"licenseComments,omitempty"`
 	Description       string     `json:"description,omitempty"`
+	Attribution       *[]string  `json:"attributionTexts,omitempty"`
 	FileTypes         []string   `json:"fileTypes,omitempty"`
 	LicenseInfoInFile []string   `json:"licenseInfoInFiles,omitempty"` // List of licenses
 	Checksums         []Checksum `json:"checksums"`
